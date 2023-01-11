@@ -1,12 +1,23 @@
 from sense_emu import SenseHat
 from typing import Union
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 sense = SenseHat()
 timestamp = 0
 direction = None
 action = None
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/get_data")
@@ -63,7 +74,6 @@ def get_data():
 def put_led(request: list):
     for data in request:
         sense.set_pixel(data["x"], data["y"], data["r"], data["g"], data["b"])
-    return {"Status": "Success"}
 
 
 # def main():
