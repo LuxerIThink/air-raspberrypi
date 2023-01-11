@@ -1,8 +1,9 @@
 from sense_emu import SenseHat
 from typing import Union
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import JSONResponse
+import json
 
 app = FastAPI()
 sense = SenseHat()
@@ -21,7 +22,7 @@ app.add_middleware(
 
 
 @app.get("/get_data")
-def get_data():
+async def get_data():
     pressure = sense.get_pressure()
     humidity = sense.get_humidity()
     temperature = sense.get_temperature()
@@ -71,9 +72,16 @@ def get_data():
 
 
 @app.put("/put_led")
-def put_led(request: list):
-    for data in request:
+async def put_led(request: Request):
+    try:
+        json_data = await request.json()
+    except json.decoder.JSONDecodeError:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    for data in json_data:
         sense.set_pixel(data["x"], data["y"], data["r"], data["g"], data["b"])
+
+    return JSONResponse(content="{}")
 
 
 # def main():
